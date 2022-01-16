@@ -3,8 +3,10 @@ package foo
 import stuff._
 import stuff.block.Block._
 import stuff.block.Inline._
-import stuff.presentation.Error.{NoH1Found, TooManyH1Found}
-import stuff.presentation.{Presentation, Slide}
+import stuff.presentation.Error.NoH1Found
+import stuff.presentation.Error.TooManyH1Found
+import stuff.presentation.Presentation
+import stuff.presentation.Slide
 import utest._
 
 object MarkdownParserTests extends TestSuite {
@@ -27,7 +29,12 @@ object MarkdownParserTests extends TestSuite {
     }
     test("h1 + text + h2") {
       parse("# h1", "some text", "## h2") ==>
-        Right(Presentation(List(Text("h1")), List(Slide(Nil, List(Par(List(Text("some text"))))), Slide(List(Text("h2")), Nil))))
+        Right(
+          Presentation(
+            List(Text("h1")),
+            List(Slide(Nil, List(Par(List(Text("some text"))))), Slide(List(Text("h2")), Nil))
+          )
+        )
     }
     test("h1 + code + text") {
       parse("# h1", "`code`", "text") ==>
@@ -35,7 +42,12 @@ object MarkdownParserTests extends TestSuite {
     }
     test("h1 + list") {
       parse("# h1", "- a", "- b", "- c") ==>
-        Right(Presentation(List(Text("h1")), List(Slide(Nil, List(ListItem(List(Par(List(Text("a"))), Par(List(Text("b"))), Par(List(Text("c"))))))))))
+        Right(
+          Presentation(
+            List(Text("h1")),
+            List(Slide(Nil, List(ListItem(List(Par(List(Text("a"))), Par(List(Text("b"))), Par(List(Text("c"))))))))
+          )
+        )
     }
   }
 

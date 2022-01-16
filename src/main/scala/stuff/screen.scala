@@ -10,10 +10,12 @@ package object screen {
 
   case class Print(text: String, line: Int, column: Int, attribute: Option[Int])
 
-  def build(presentation: Presentation,
-            lines: Int,
-            columns: Int,
-            hasColors: Boolean): List[Screen] = {
+  def build(
+      presentation: Presentation,
+      lines: Int,
+      columns: Int,
+      hasColors: Boolean
+  ): List[Screen] = {
     val title = toText(presentation.title)
     presentation.slides.zipWithIndex.map { case (slide, i) =>
       val pagination = s"${i + 1}/${presentation.slides.length}"
@@ -26,9 +28,11 @@ package object screen {
     }
   }
 
-  private def buildBody(slide: presentation.Slide,
-                        firstLine: Int,
-                        columns: Int): List[Print] = {
+  private def buildBody(
+      slide: presentation.Slide,
+      firstLine: Int,
+      columns: Int
+  ): List[Print] = {
     val maxColumns = Math.min(maxWidth(slide.body), columns)
     val firstColumn = (columns - maxColumns) / 2
     buildPrint(slide.body, firstLine, firstColumn + 10, maxColumns)._1
@@ -38,7 +42,7 @@ package object screen {
     block match {
       //case Block.H1(inlines) =>
       //case Block.H2(inlines) =>
-      case Par(inlines) => Math.max(width, maxWidthInlines(inlines))
+      case Par(inlines)     => Math.max(width, maxWidthInlines(inlines))
       case ListItem(blocks) => Math.max(width, maxWidth(blocks))
     }
   }
@@ -48,22 +52,25 @@ package object screen {
       inline match {
         case Inline.Text(text) => maxW -> (currW + text.length)
         case Inline.Code(text) => maxW -> (currW + text.length)
-        case Inline.NewLine => Math.max(maxW, currW) -> 0
+        case Inline.NewLine    => Math.max(maxW, currW) -> 0
       }
     }
     Math.max(a, b)
   }
 
-  private def buildPrint(blocks: List[Block],
-                         firstLine: Int,
-                         firstColumn: Int,
-                         maxColumns: Int): (List[Print], Int) =
+  private def buildPrint(
+      blocks: List[Block],
+      firstLine: Int,
+      firstColumn: Int,
+      maxColumns: Int
+  ): (List[Print], Int) =
     blocks.foldLeft(List.empty[Print] -> firstLine) { case ((prints, l), block) =>
       block match {
         //case Block.H1(inlines) =>
         //case Block.H2(inlines) =>
         case Par(inlines) =>
-          val (p, (l2, _)) = buildPrintInline(inlines, l, firstColumn, maxColumns)
+          val (p, (l2, _)) =
+            buildPrintInline(inlines, l, firstColumn, maxColumns)
           (prints ++ p) -> (l2 + 1)
         case ListItem(blocks) =>
           val (p, l2) = buildPrint(blocks, l, firstColumn, maxColumns)
@@ -72,16 +79,19 @@ package object screen {
       }
     }
 
-  private def buildPrintInline(inlines: List[Inline],
-                               firstLine: Int,
-                               firstColumn: Int,
-                               maxWidth: Int): (List[Print], (Int, Int)) =
+  private def buildPrintInline(
+      inlines: List[Inline],
+      firstLine: Int,
+      firstColumn: Int,
+      maxWidth: Int
+  ): (List[Print], (Int, Int)) =
     inlines.foldLeft(List.empty[Print] -> (firstLine -> firstColumn)) { case ((prints, (l, c)), inline) =>
       inline match {
         case Inline.Text(text) =>
           if ((text.length + c) > maxWidth) {
             val (before, after) = text.split(" ").foldLeft("" -> "") { case ((before, after), word) =>
-              if (after.nonEmpty || (before ++ word).length > maxWidth) before -> s"$after $word"
+              if (after.nonEmpty || (before ++ word).length > maxWidth)
+                before -> s"$after $word"
               else s"$before $word" -> after
             }
             val p2 = Seq(
@@ -89,20 +99,21 @@ package object screen {
               Print(after, l + 1, firstColumn, None)
             )
             (prints ++ p2) -> (l + 1 -> (firstColumn + after.length))
-          }
-          else (prints :+ Print(text, l, c, None)) -> (l -> (c + text.length))
+          } else
+            (prints :+ Print(text, l, c, None)) -> (l -> (c + text.length))
         case Inline.Code(text) =>
           (prints :+ Print(text, l, c, None)) -> (l -> (c + text.length))
         case Inline.NewLine =>
           prints -> (l + 1 -> firstColumn)
       }
-
     }
 
-
-  private def toText(inlines: List[Inline]): String = inlines.map {
-    case Inline.Text(text) => text
-    case Inline.Code(text) => text // FIXME invert color
-    case Inline.NewLine => "\n"
-  }.mkString(" ")
+  private def toText(inlines: List[Inline]): String =
+    inlines
+      .map {
+        case Inline.Text(text) => text
+        case Inline.Code(text) => text // FIXME invert color
+        case Inline.NewLine    => "\n"
+      }
+      .mkString(" ")
 }

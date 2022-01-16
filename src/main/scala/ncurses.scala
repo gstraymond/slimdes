@@ -1,4 +1,4 @@
-import scalanative.native._
+import scala.scalanative.unsafe._
 
 // http://invisible-island.net/ncurses/man/ncurses.3x.html
 
@@ -33,7 +33,7 @@ object ncurses {
   def box(window: Ptr[Window], verch: ChType, horch: ChType): CInt = extern
 
   @name("mvwprintw")
-  def printFormatted(window: Ptr[Window], y: CInt, x: CInt, fmt: CString, args: CVararg*): CInt = extern
+  def printFormatted(window: Ptr[Window], y: CInt, x: CInt, fmt: CString, args: CVarArg*): CInt = extern
 
   @name("mvwaddch")
   def printChar(window: Ptr[Window], y: CInt, x: CInt, ch: ChType): CInt = extern
@@ -103,14 +103,14 @@ object ncursesh {
   class Color(val value: CInt) extends AnyVal
   object Color {
     final val Transparent = new Color(-1)
-    final val Black   = new Color(0)
-    final val Red     = new Color(1)
-    final val Green   = new Color(2)
-    final val Yellow  = new Color(3)
-    final val Blue    = new Color(4)
+    final val Black = new Color(0)
+    final val Red = new Color(1)
+    final val Green = new Color(2)
+    final val Yellow = new Color(3)
+    final val Blue = new Color(4)
     final val Magenta = new Color(5)
-    final val Cyan    = new Color(6)
-    final val White   = new Color(7)
+    final val Cyan = new Color(6)
+    final val White = new Color(7)
   }
   class Attribute(val value: CInt) extends AnyVal
 }

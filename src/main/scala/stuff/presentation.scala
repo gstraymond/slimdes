@@ -1,8 +1,11 @@
 package stuff
 
-import stuff.block.Block.{H1, H2}
-import stuff.block.{Block, Inline}
-import stuff.presentation.Error.{NoH1Found, TooManyH1Found}
+import stuff.block.Block
+import stuff.block.Block.H1
+import stuff.block.Block.H2
+import stuff.block.Inline
+import stuff.presentation.Error.NoH1Found
+import stuff.presentation.Error.TooManyH1Found
 
 package object presentation {
 
@@ -23,20 +26,20 @@ package object presentation {
   def build(blocks: List[Block]): Either[Error, Presentation] = {
     val (h1s, others) = blocks.partition {
       case _: H1 => true
-      case _ => false
+      case _     => false
     }
 
     h1s match {
-      case Nil => Left(NoH1Found)
+      case Nil      => Left(NoH1Found)
       case List(h1) => Right(buildPresentation(h1.asInstanceOf[H1], others))
-      case _ => Left(TooManyH1Found)
+      case _        => Left(TooManyH1Found)
     }
   }
 
   private def buildPresentation(h1: H1, blocks: List[Block]): Presentation = {
     val (slides, slide) = blocks.foldLeft(List.empty[Slide] -> Slide(Nil, Nil)) {
       case ((slides, slide), H2(inlines)) => (slides :+ slide) -> Slide(inlines, Nil)
-      case ((slides, slide), block) => slides -> slide.copy(body = slide.body :+ block)
+      case ((slides, slide), block)       => slides -> slide.copy(body = slide.body :+ block)
     }
     Presentation(
       h1.inlines,

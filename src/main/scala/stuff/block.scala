@@ -1,6 +1,8 @@
 package stuff
 
-import stuff.event.{Enter, Event, Exit}
+import stuff.event.Enter
+import stuff.event.Event
+import stuff.event.Exit
 
 package object block {
 
@@ -31,19 +33,21 @@ package object block {
   }
 
   def build(events: Stream[Event]): List[Block] =
-    events.foldLeft(List.empty[Block] -> List.empty[Inline]) { case ((blocks, inlines), current) =>
-      current match {
-        case Enter(event.Block.Text(text)) => blocks -> (inlines :+ Inline.Text(text))
-        case Enter(event.Block.Code(text)) => blocks -> (inlines :+ Inline.Code(text))
-        case Enter(event.Block.NewLine) => blocks -> (inlines :+ Inline.NewLine)
-        case Enter(event.Block.List) => (blocks :+ Block.ListItem(Nil)) -> inlines
-        case Exit(event.Block.H1) => (blocks :+ Block.H1(inlines)) -> Nil
-        case Exit(event.Block.H2) => (blocks :+ Block.H2(inlines)) -> Nil
-        case Exit(event.Block.Par) => (blocks :+ Block.Par(inlines)) -> Nil
-        case Exit(event.Block.List) =>
-          val (before, after) = blocks.splitAt(blocks.indexOf(Block.ListItem(Nil)))
-          (before :+ Block.ListItem(after.drop(1))) -> Nil
-        case any => println(s"skipped: $any"); blocks -> inlines
+    events
+      .foldLeft(List.empty[Block] -> List.empty[Inline]) { case ((blocks, inlines), current) =>
+        current match {
+          case Enter(event.Block.Text(text)) => blocks -> (inlines :+ Inline.Text(text))
+          case Enter(event.Block.Code(text)) => blocks -> (inlines :+ Inline.Code(text))
+          case Enter(event.Block.NewLine)    => blocks -> (inlines :+ Inline.NewLine)
+          case Enter(event.Block.List)       => (blocks :+ Block.ListItem(Nil)) -> inlines
+          case Exit(event.Block.H1)          => (blocks :+ Block.H1(inlines)) -> Nil
+          case Exit(event.Block.H2)          => (blocks :+ Block.H2(inlines)) -> Nil
+          case Exit(event.Block.Par)         => (blocks :+ Block.Par(inlines)) -> Nil
+          case Exit(event.Block.List) =>
+            val (before, after) = blocks.splitAt(blocks.indexOf(Block.ListItem(Nil)))
+            (before :+ Block.ListItem(after.drop(1))) -> Nil
+          case any => println(s"skipped: $any"); blocks -> inlines
+        }
       }
-    }._1
+      ._1
 }

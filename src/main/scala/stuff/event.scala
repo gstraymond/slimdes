@@ -1,8 +1,11 @@
 package stuff
 
-import cmark.{EventType, Iter, Node, NodeType}
+import cmark.EventType
+import cmark.Iter
+import cmark.Node
+import cmark.NodeType
 
-import scala.scalanative.native.{Ptr, fromCString}
+import scala.scalanative.unsafe._
 
 package object event {
 
@@ -27,25 +30,26 @@ package object event {
   def build(iter: Ptr[Iter])(evType: EventType): Option[Event] = {
     val node = Iter.getNode(iter)
     val maybeBlock = Node.getType(node) match {
-      case NodeType.Text => Some(Block.Text(fromCString(Node.getLiteral(node))))
-      case NodeType.Code => Some(Block.Code(fromCString(Node.getLiteral(node))))
+      case NodeType.Text      => Some(Block.Text(fromCString(Node.getLiteral(node))))
+      case NodeType.Code      => Some(Block.Code(fromCString(Node.getLiteral(node))))
       case NodeType.Paragraph => Some(Block.Par)
       case NodeType.SoftBreak => Some(Block.NewLine)
-      case NodeType.List => Some(Block.List)
-      case NodeType.Item => Some(Block.Item)
-      case NodeType.Heading => Node.getHeadingLevel(node) match {
-        case 1 => Some(Block.H1)
-        case 2 => Some(Block.H2)
-        case l => println(s"skipped: H$l"); None
-      }
+      case NodeType.List      => Some(Block.List)
+      case NodeType.Item      => Some(Block.Item)
+      case NodeType.Heading =>
+        Node.getHeadingLevel(node) match {
+          case 1 => Some(Block.H1)
+          case 2 => Some(Block.H2)
+          case l => println(s"skipped: H$l"); None
+        }
       case NodeType.Document => None
-      case n => println(s"skipped: $n"); None
+      case n                 => println(s"skipped: $n"); None
     }
 
     maybeBlock.map { block =>
       evType match {
         case EventType.Enter => Enter(block)
-        case _ => Exit(block)
+        case _               => Exit(block)
       }
     }
   }

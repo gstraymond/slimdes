@@ -1,21 +1,22 @@
 package stuff
 
 import cmark._
-import stuff.presentation.{Error, Presentation}
+import stuff.presentation.Error
+import stuff.presentation.Presentation
 
-import scala.scalanative.native
-import scala.scalanative.native._
+import scala.scalanative.unsafe._
+import scala.scalanative.unsigned._
 
 object Markdown {
 
   def parse(md: String): Either[Error, Presentation] = {
-    native.Zone { implicit z =>
-
-      val docNode = Parser.parseDocument(toCString(md), md.length, Options.Default)
+    Zone { implicit z =>
+      val docNode = Parser.parseDocument(toCString(md), md.length().toULong, Options.Default)
       val iter = Iter.create(docNode)
 
       val events =
-        Stream.continually(Iter.next(iter))
+        Stream
+          .continually(Iter.next(iter))
           .takeWhile(_ != EventType.Done)
           .flatMap(event.build(iter))
 
@@ -31,4 +32,3 @@ object Markdown {
     }
   }
 }
-

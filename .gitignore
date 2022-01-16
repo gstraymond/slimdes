@@ -2,6 +2,7 @@
 .idea/
 .metals/
 .vscode/
+.bsp/
 target
 project/metals.sbt
 project/
